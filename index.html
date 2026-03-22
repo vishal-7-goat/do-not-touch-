@@ -55,14 +55,10 @@ body::before{
   color:var(--gold);opacity:0.75;margin-bottom:10px;
 }
 .big-title{
-  font-size:52px;line-height:0.95;color:var(--cream);letter-spacing:0.01em;
+  font-size:38px;line-height:1.1;color:var(--cream);letter-spacing:0.02em;white-space:nowrap;
   text-shadow:0 0 80px rgba(212,168,67,0.22);
 }
-.big-title span{
-  display:block;
-  background:linear-gradient(135deg,var(--gold2) 0%,var(--gold) 50%,var(--ember) 100%);
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
-}
+.big-title span{background:linear-gradient(135deg,var(--gold2) 0%,var(--gold) 50%,var(--ember) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
 .date-pill{
   display:inline-flex;align-items:center;gap:6px;
   background:var(--s2);border:1px solid var(--b2);border-radius:20px;
@@ -286,6 +282,65 @@ body::before{
   transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1);z-index:999;white-space:nowrap;
 }
 .toast.show{transform:translateX(-50%) translateY(0);}
+
+.celebration-overlay{
+  position:fixed;inset:0;z-index:9999;pointer-events:none;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  opacity:0;transition:opacity 0.3s;
+}
+.celebration-overlay.show{opacity:1;pointer-events:all;}
+.celebration-overlay.hide{opacity:0;pointer-events:none;}
+.celeb-card{
+  background:linear-gradient(145deg,#1c0800,#2a1200);
+  border:1px solid var(--fire);
+  border-radius:20px;padding:36px 40px;text-align:center;
+  position:relative;overflow:hidden;
+  box-shadow:0 0 60px rgba(255,72,0,0.4),0 0 120px rgba(255,140,0,0.2);
+  transform:scale(0.7);transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
+}
+.celebration-overlay.show .celeb-card{transform:scale(1);}
+.celeb-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,var(--fire),var(--ember),var(--gold),transparent);
+}
+.celeb-flame{
+  font-size:56px;display:block;margin-bottom:8px;
+  animation:celeb-pulse 0.6s ease-in-out infinite alternate;
+  filter:drop-shadow(0 0 20px rgba(255,72,0,0.9));
+}
+@keyframes celeb-pulse{0%{transform:scale(1) rotate(-3deg);}100%{transform:scale(1.15) rotate(3deg);}}
+.celeb-title{
+  font-size:28px;font-weight:bold;color:var(--cream);
+  letter-spacing:0.05em;margin-bottom:6px;
+}
+.celeb-title span{
+  background:linear-gradient(135deg,var(--gold2),var(--gold),var(--ember));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.celeb-sub{font-size:13px;color:var(--muted2);letter-spacing:0.1em;margin-bottom:24px;line-height:1.6;}
+.celeb-sub em{color:var(--ember);font-style:normal;}
+.celeb-streak{
+  font-size:48px;color:var(--cream);
+  text-shadow:0 0 30px rgba(255,140,0,0.5);
+  margin-bottom:4px;
+}
+.celeb-streak-lbl{font-size:11px;color:var(--gold);letter-spacing:0.25em;text-transform:uppercase;margin-bottom:24px;}
+.celeb-close{
+  background:transparent;border:1px solid var(--gold);
+  border-radius:8px;padding:10px 28px;
+  font-family:'VFC',serif;font-size:13px;
+  letter-spacing:0.15em;text-transform:uppercase;
+  color:var(--gold);cursor:pointer;transition:all 0.2s;
+}
+.celeb-close:hover{background:rgba(212,168,67,0.1);}
+.particle{
+  position:fixed;pointer-events:none;z-index:10000;
+  border-radius:50%;animation:particle-fall linear forwards;
+}
+@keyframes particle-fall{
+  0%{transform:translateY(0) rotate(0deg);opacity:1;}
+  100%{transform:translateY(100vh) rotate(720deg);opacity:0;}
+}
 </style>
 </head>
 <body>
@@ -296,7 +351,7 @@ body::before{
     <div class="hdr-top">
       <div class="hdr-left">
         <div class="tag-line">⚔ &nbsp; Forge Yourself Daily &nbsp; ⚔</div>
-        <div class="big-title">No<br><span>Zero</span><br>Days</div>
+        <div class="big-title">No <span>Zero</span> Days</div>
         <div class="date-pill" id="date-pill">—</div>
       </div>
       <button class="notif-btn" id="notif-btn" onclick="reqNotif()">🔔 Alerts</button>
@@ -424,8 +479,8 @@ function total(s){let c=0;for(let i=364;i>=0;i--){const k=dk(i);if(s[k]&&HABITS.
 function hstreak(key,s){const t=tk();const td=s[t]&&s[t][key];let c=0;for(let i=td?0:1;i<365;i++){const k=dk(i);if(s[k]&&s[k][key])c++;else break;}return c;}
 function msg(n){const o=MSGS.filter(m=>n>=m.m);return o[o.length-1].t;}
 function toast(m){const t=document.getElementById('toast');t.innerHTML=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2600);}
-function toggle(key){const s=gs();const t=tk();if(!s[t])s[t]={};s[t][key]=!s[t][key];ss(s);if(s[t][key])toast('✓ '+HABITS.find(h=>h.key===key).name);render();}
-function markAll(){const s=gs();const t=tk();if(!s[t])s[t]={};const all=HABITS.every(h=>s[t][h.key]);HABITS.forEach(h=>s[t][h.key]=!all);ss(s);if(!all)toast('⚔ All battles won. Mahadev approves 🔱');render();}
+function toggle(key){const s=gs();const t=tk();if(!s[t])s[t]={};s[t][key]=!s[t][key];ss(s);if(s[t][key])toast('✓ '+HABITS.find(h=>h.key===key).name);render();if(s[t][key]&&HABITS.every(h=>s[t][h.key])){setTimeout(()=>celebrate(streak(s)),400);}}
+function markAll(){const s=gs();const t=tk();if(!s[t])s[t]={};if(HABITS.every(h=>s[t][h.key]))return;HABITS.forEach(h=>s[t][h.key]=true);ss(s);render();celebrate(streak(s));} 
 function sched(s){
   if(!('serviceWorker' in navigator)||Notification.permission!=='granted')return;
   const t=tk();if(s[t]&&HABITS.every(h=>s[t][h.key]))return;
@@ -443,6 +498,36 @@ async function reqNotif(){
   const btn=document.getElementById('notif-btn');
   if(p==='granted'){btn.textContent='✓ Alerts On';btn.classList.add('on');toast('Streak reminders ON 🔥');sched(gs());}
   else toast('Allow notifications in browser settings');
+}
+
+function celebrate(sr){
+  document.getElementById('celeb-streak-num').textContent=sr;
+  const ov=document.getElementById('celeb-overlay');
+  ov.classList.remove('hide');ov.classList.add('show');
+  spawnParticles();
+}
+function closeceleb(){
+  const ov=document.getElementById('celeb-overlay');
+  ov.classList.remove('show');ov.classList.add('hide');
+}
+function spawnParticles(){
+  const colors=['#ff4800','#ff8c00','#d4a843','#f5cc6a','#ff2800','#ffcc00'];
+  for(let i=0;i<60;i++){
+    const p=document.createElement('div');
+    p.className='particle';
+    const size=Math.random()*10+5;
+    p.style.cssText=`
+      width:${size}px;height:${size}px;
+      left:${Math.random()*100}vw;top:-20px;
+      background:${colors[Math.floor(Math.random()*colors.length)]};
+      animation-duration:${Math.random()*2+1.5}s;
+      animation-delay:${Math.random()*0.8}s;
+      border-radius:${Math.random()>0.5?'50%':'3px'};
+      opacity:${Math.random()*0.6+0.4};
+    `;
+    document.body.appendChild(p);
+    setTimeout(()=>p.remove(),(Math.random()*2+2)*1000);
+  }
 }
 function render(){
   const s=gs();const t=tk();const td=s[t]||{};
@@ -509,5 +594,16 @@ if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js').then
 });
 render();
 </script>
+
+<div class="celebration-overlay" id="celeb-overlay" onclick="closeceleb()">
+  <div class="celeb-card" onclick="event.stopPropagation()">
+    <span class="celeb-flame">🔥</span>
+    <div class="celeb-title">All Battles <span>Won!</span></div>
+    <div class="celeb-sub">Mahadev sees it. <em>Day complete. Streak alive.</em><br>Jai Mahadev 🔱</div>
+    <div class="celeb-streak" id="celeb-streak-num">1</div>
+    <div class="celeb-streak-lbl">Day Streak</div>
+    <button class="celeb-close" onclick="closeceleb()">Keep Going ⚔</button>
+  </div>
+</div>
 </body>
 </html>
