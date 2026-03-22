@@ -1,11 +1,11 @@
 {
-  "name": "Vishal's Streak Tracker 🔥",
-  "short_name": "Streak",
+  "name": "No Zero Days",
+  "short_name": "No Zero Days",
   "description": "Daily habit streak tracker — DSA, LeetCode, GitHub, ML",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#0a0a0a",
-  "theme_color": "#0a0a0a",
+  "background_color": "#0c0a08",
+  "theme_color": "#0c0a08",
   "orientation": "portrait",
   "icons": [
     {
